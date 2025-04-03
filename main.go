@@ -7,7 +7,6 @@ import (
 	"net/http"
 	url2 "net/url"
 	"strings"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/robfig/cron/v3"
@@ -90,7 +89,7 @@ func translateChunk(text string) (string, error) {
 	encodedText := url2.QueryEscape(text)
 	params := fmt.Sprintf("?q=%s&langpair=en|ru", encodedText)
 
-	log.Printf("Выполняется запрос к MyMemory API: %s%s", url, params)
+	log.Printf("INFO: Выполняется запрос к MyMemory API: %s%s", url, params)
 
 	resp, err := http.Get(url + params)
 	if err != nil {
@@ -119,65 +118,51 @@ func translateChunk(text string) (string, error) {
 }
 
 func sendQuote(bot *tgbotapi.BotAPI, chatID int64) {
-	log.Println("Задача отправки цитаты запущена")
+	log.Println("INFO: Задача отправки цитаты запущена")
 	quote, err := fetchQuote()
 	if err != nil {
-		log.Printf("Ошибка получения цитаты: %v", err)
+		log.Printf("ERROR: Ошибка получения цитаты: %v", err)
 		return
 	}
 
 	translatedQuote, err := translateToRussian(quote)
 	if err != nil {
-		log.Printf("Ошибка перевода цитаты: %v", err)
+		log.Printf("ERROR: Ошибка перевода цитаты: %v", err)
 		translatedQuote = quote
 	}
 
 	msg := tgbotapi.NewMessage(chatID, translatedQuote)
 	if _, err := bot.Send(msg); err != nil {
-		log.Printf("Ошибка отправки сообщения: %v", err)
+		log.Printf("ERROR: Ошибка отправки сообщения: %v", err)
 	} else {
-		log.Printf("Цитата успешно отправлена: %s", translatedQuote)
+		log.Printf("INFO: Цитата успешно отправлена: %s", translatedQuote)
 	}
 }
 
 func main() {
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
-		log.Panicf("Не удалось инициализировать бота: %v", err)
+		log.Panicf("ERROR: Не удалось инициализировать бота: %v", err)
 	}
 	bot.Debug = true
-	log.Printf("Бот запущен под именем: %s", bot.Self.UserName)
+	log.Printf("INFO: Бот запущен под именем: %s", bot.Self.UserName)
 
 	c := cron.New()
 	defer c.Stop()
 
-	// Тестовая задача каждую минуту
-	_, err = c.AddFunc("* * * * *", func() {
-		log.Println("Тестовая задача Cron выполнена")
-	})
-	if err != nil {
-		log.Fatalf("Ошибка добавления тестовой задачи в cron: %v", err)
-	}
-
 	// Задачи отправки цитат три раза в день (время в UTC)
-	times := []string{"0 3 * * *", "0 9 * * *", "0 15 * * *"}
+	times := []string{"0 3 * * *", "0 9 * * *", "0 15 * * *"} // 6:00, 12:00, 18:00 МСК
 	for _, cronTime := range times {
 		_, err := c.AddFunc(cronTime, func() {
 			sendQuote(bot, chatID)
 		})
 		if err != nil {
-			log.Fatalf("Ошибка добавления задачи в cron: %v", err)
+			log.Fatalf("ERROR: Ошибка добавления задачи в cron: %v", err)
 		}
 	}
 
 	c.Start()
-	log.Println("Планировщик запущен. Ожидание задач.")
-
-	// Тестовая отправка цитаты
-	go func() {
-		time.Sleep(5 * time.Second)
-		sendQuote(bot, chatID)
-	}()
+	log.Println("INFO: Планировщик запущен. Ожидание задач.")
 
 	select {}
 }
