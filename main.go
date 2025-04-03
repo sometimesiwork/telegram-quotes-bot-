@@ -160,7 +160,7 @@ func main() {
 	}
 
 	// Задачи отправки цитат три раза в день (время в UTC)
-	times := []string{"0 6 * * *", "0 12 * * *", "0 18 * * *"}
+	times := []string{"0 3 * * *", "0 9 * * *", "0 15 * * *"}
 	for _, cronTime := range times {
 		_, err := c.AddFunc(cronTime, func() {
 			sendQuote(bot, chatID)
