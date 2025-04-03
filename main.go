@@ -44,7 +44,6 @@ func fetchQuote() (string, error) {
 		return "", fmt.Errorf("неожиданный HTTP статус: %d", resp.StatusCode)
 	}
 
-	// Распарсить JSON-ответ. Ответ представляет собой массив цитат.
 	var quotes []Quote
 	if err := json.NewDecoder(resp.Body).Decode(&quotes); err != nil {
 		return "", fmt.Errorf("ошибка декодирования JSON: %w", err)
@@ -54,7 +53,6 @@ func fetchQuote() (string, error) {
 		return "", fmt.Errorf("получен пустой список цитат")
 	}
 
-	// Форматируем ответ в виде: "Цитата – Автор"
 	result := fmt.Sprintf("%s – %s", quotes[0].Quote, quotes[0].Author)
 	return result, nil
 }
@@ -75,7 +73,6 @@ func translateToRussian(text string) (string, error) {
 	return strings.Join(translatedChunks, " "), nil
 }
 
-// splitText разбивает текст на части длиной до maxTextLength символов.
 const maxTextLength = 500
 
 func splitText(text string) []string {
@@ -88,11 +85,8 @@ func splitText(text string) []string {
 	return chunks
 }
 
-// translateChunk переводит одну часть текста.
 func translateChunk(text string) (string, error) {
 	url := "https://api.mymemory.translated.net/get"
-
-	// Кодируем текст для безопасного использования в URL
 	encodedText := url2.QueryEscape(text)
 	params := fmt.Sprintf("?q=%s&langpair=en|ru", encodedText)
 
@@ -125,30 +119,28 @@ func translateChunk(text string) (string, error) {
 }
 
 func sendQuote(bot *tgbotapi.BotAPI, chatID int64) {
+	log.Println("Задача отправки цитаты запущена")
 	quote, err := fetchQuote()
 	if err != nil {
 		log.Printf("Ошибка получения цитаты: %v", err)
 		return
 	}
 
-	// Переводим цитату на русский язык
 	translatedQuote, err := translateToRussian(quote)
 	if err != nil {
 		log.Printf("Ошибка перевода цитаты: %v", err)
-		translatedQuote = quote // Возвращаем оригинальную цитату, если перевод не удался
+		translatedQuote = quote
 	}
 
-	// Отправляем цитату в Telegram-канал
 	msg := tgbotapi.NewMessage(chatID, translatedQuote)
 	if _, err := bot.Send(msg); err != nil {
 		log.Printf("Ошибка отправки сообщения: %v", err)
 	} else {
-		log.Printf("Отправлена цитата: %s", translatedQuote)
+		log.Printf("Цитата успешно отправлена: %s", translatedQuote)
 	}
 }
 
 func main() {
-	// Инициализация Telegram-бота.
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
 		log.Panicf("Не удалось инициализировать бота: %v", err)
@@ -156,11 +148,19 @@ func main() {
 	bot.Debug = true
 	log.Printf("Бот запущен под именем: %s", bot.Self.UserName)
 
-	// Инициализация планировщика cron.
 	c := cron.New()
+	defer c.Stop()
 
-	// Добавляем задачи – отправка цитаты три раза в день.
-	times := []string{"0 9 * * *", "0 15 * * *", "0 21 * * *"} // 9:00, 15:00, 21:00
+	// Тестовая задача каждую минуту
+	_, err = c.AddFunc("* * * * *", func() {
+		log.Println("Тестовая задача Cron выполнена")
+	})
+	if err != nil {
+		log.Fatalf("Ошибка добавления тестовой задачи в cron: %v", err)
+	}
+
+	// Задачи отправки цитат три раза в день (время в UTC)
+	times := []string{"0 6 * * *", "0 12 * * *", "0 18 * * *"}
 	for _, cronTime := range times {
 		_, err := c.AddFunc(cronTime, func() {
 			sendQuote(bot, chatID)
@@ -170,16 +170,14 @@ func main() {
 		}
 	}
 
-	// Запуск планировщика.
 	c.Start()
 	log.Println("Планировщик запущен. Ожидание задач.")
 
 	// Тестовая отправка цитаты
 	go func() {
-		time.Sleep(5 * time.Second) // Ждём 5 секунд перед отправкой тестовой цитаты
+		time.Sleep(5 * time.Second)
 		sendQuote(bot, chatID)
 	}()
 
-	// Приложение работает бесконечно.
 	select {}
 }
