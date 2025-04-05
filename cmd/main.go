@@ -47,7 +47,7 @@ func main() {
 	defer c.Stop()
 
 	// Задача отправки цитат
-	c.AddFunc("*/30 * * * *", func() {
+	c.AddFunc("0 4,8,14,18 * * *", func() {
 		ctx := context.Background()
 
 		// Получение цитаты
