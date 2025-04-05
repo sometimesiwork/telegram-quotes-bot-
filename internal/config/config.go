@@ -5,8 +5,6 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
-
-	"github.com/joho/godotenv"
 )
 
 // Config представляет конфигурацию приложения.
@@ -17,11 +15,6 @@ type Config struct {
 
 // LoadConfig загружает конфигурацию из переменных окружения.
 func LoadConfig(logger *slog.Logger) (*Config, error) {
-	// Пытаемся загрузить .env файл (локально)
-	if err := godotenv.Load(); err != nil {
-		logger.Info("Файл .env не найден, используем переменные окружения из системы")
-	}
-
 	// Чтение переменных окружения
 	botToken := os.Getenv("BOT_TOKEN")
 	chatIDStr := os.Getenv("CHAT_ID")
@@ -29,7 +22,7 @@ func LoadConfig(logger *slog.Logger) (*Config, error) {
 	// Проверка наличия обязательных переменных
 	if botToken == "" || chatIDStr == "" {
 		logger.Error("Необходимые переменные окружения отсутствуют", "BOT_TOKEN", botToken, "CHAT_ID", chatIDStr)
-		return nil, ErrMissingEnvVars
+		return nil, errors.New("необходимые переменные окружения отсутствуют")
 	}
 
 	// Преобразование CHAT_ID в int64
@@ -45,6 +38,3 @@ func LoadConfig(logger *slog.Logger) (*Config, error) {
 		ChatID:   chatID,
 	}, nil
 }
-
-// Ошибка для случая отсутствия переменных окружения
-var ErrMissingEnvVars = errors.New("необходимые переменные окружения отсутствуют")

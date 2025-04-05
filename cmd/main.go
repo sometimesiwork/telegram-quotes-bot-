@@ -65,6 +65,7 @@ func main() {
 			quote.Text = translatedText
 		}
 
+		// Отправка цитаты
 		if err := sendQuoteService.SendQuote(ctx, quote); err != nil {
 			logger.Error("Ошибка отправки цитаты", "error", err)
 		} else {
