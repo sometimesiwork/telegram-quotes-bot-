@@ -11,6 +11,8 @@ type TelegramAdapter struct {
 	chatID int64
 }
 
+// NewTelegramAdapter создаёт новый экземпляр TelegramAdapter.
+// Принимает токен бота и ID чата.
 func NewTelegramAdapter(botToken string, chatID int64) (*TelegramAdapter, error) {
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
@@ -19,6 +21,8 @@ func NewTelegramAdapter(botToken string, chatID int64) (*TelegramAdapter, error)
 	return &TelegramAdapter{bot: bot, chatID: chatID}, nil
 }
 
+// SendMessage отправляет текстовое сообщение в Telegram-чат.
+// Принимает контекст и текст сообщения.
 func (t *TelegramAdapter) SendMessage(ctx context.Context, message string) error {
 	msg := tgbotapi.NewMessage(t.chatID, message)
 	_, err := t.bot.Send(msg)

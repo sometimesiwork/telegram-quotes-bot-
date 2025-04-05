@@ -11,10 +11,13 @@ import (
 
 type ZenQuotesAPI struct{}
 
+// NewZenQuotesAPI создаёт новый экземпляр ZenQuotesAPI.
 func NewZenQuotesAPI() *ZenQuotesAPI {
 	return &ZenQuotesAPI{}
 }
 
+// GetRandomQuote получает случайную цитату из ZenQuotes API.
+// Возвращает структуру Quote или ошибку, если запрос или декодирование не удались.
 func (z *ZenQuotesAPI) GetRandomQuote(ctx context.Context) (*entities.Quote, error) {
 	resp, err := http.Get("https://zenquotes.io/api/random")
 	if err != nil {

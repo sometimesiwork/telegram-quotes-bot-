@@ -10,10 +10,14 @@ import (
 
 type MyMemoryTranslator struct{}
 
+// NewMyMemoryTranslator создаёт новый экземпляр MyMemoryTranslator.
 func NewMyMemoryTranslator() *MyMemoryTranslator {
 	return &MyMemoryTranslator{}
 }
 
+// Translate выполняет перевод текста через API MyMemory.
+// Принимает контекст, исходный текст и целевой язык (например, "ru").
+// Возвращает переведённый текст или ошибку, если запрос не удался.
 func (t *MyMemoryTranslator) Translate(ctx context.Context, text, targetLang string) (string, error) {
 	u := "https://api.mymemory.translated.net/get"
 	params := url.Values{}
