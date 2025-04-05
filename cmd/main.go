@@ -2,12 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 	"log/slog"
 	"os"
-	"strconv"
 	"telegram-quotes-bot/internal/adapters"
+	"telegram-quotes-bot/internal/config"
 	"telegram-quotes-bot/internal/usecases"
 )
 
@@ -18,38 +17,21 @@ func setupLogger() *slog.Logger {
 	return logger
 }
 
-func loadEnv(logger *slog.Logger) {
-	// Пытаемся загрузить .env файл (локально)
-	if err := godotenv.Load(); err != nil {
-		logger.Info("Файл .env не найден, используем переменные окружения из системы")
-	}
-}
-
 func main() {
 	// Настройка логгера
 	logger := setupLogger()
 
-	// Загрузка переменных окружения
-	loadEnv(logger)
-
-	// Чтение переменных окружения
-	botToken := os.Getenv("BOT_TOKEN")
-	chatIDStr := os.Getenv("CHAT_ID")
-	if botToken == "" || chatIDStr == "" {
-		logger.Error("Необходимые переменные окружения отсутствуют", "BOT_TOKEN", botToken, "CHAT_ID", chatIDStr)
-		os.Exit(1)
-	}
-
-	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
+	// Загрузка конфигурации
+	cfg, err := config.LoadConfig(logger)
 	if err != nil {
-		logger.Error("Ошибка преобразования CHAT_ID в int64", "error", err)
+		logger.Error("Ошибка загрузки конфигурации", "error", err)
 		os.Exit(1)
 	}
 
 	// Инициализация адаптеров
 	quoteAPI := adapters.NewZenQuotesAPI()
 	translator := adapters.NewMyMemoryTranslator()
-	telegramAdapter, err := adapters.NewTelegramAdapter(botToken, chatID)
+	telegramAdapter, err := adapters.NewTelegramAdapter(cfg.BotToken, cfg.ChatID)
 	if err != nil {
 		logger.Error("Не удалось инициализировать TelegramAdapter", "error", err)
 		os.Exit(1)
@@ -83,7 +65,6 @@ func main() {
 			quote.Text = translatedText
 		}
 
-		// Отправка цитаты
 		if err := sendQuoteService.SendQuote(ctx, quote); err != nil {
 			logger.Error("Ошибка отправки цитаты", "error", err)
 		} else {
