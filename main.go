@@ -18,22 +18,35 @@ func setupLogger() *slog.Logger {
 	return logger
 }
 
-func main() {
+func loadEnv(logger *slog.Logger) {
+	// Пытаемся загрузить .env файл (локально)
 	if err := godotenv.Load(); err != nil {
-		slog.Error("Ошибка загрузки .env файла", "error", err)
-		os.Exit(1)
+		logger.Info("Файл .env не найден, используем переменные окружения из системы")
 	}
+}
 
-	botToken := os.Getenv("BOT_TOKEN")
-	chatIDStr := os.Getenv("CHAT_ID")
-	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
-	if err != nil {
-		slog.Error("Ошибка преобразования CHAT_ID в int64", "error", err)
-		os.Exit(1)
-	}
-
+func main() {
+	// Настройка логгера
 	logger := setupLogger()
 
+	// Загрузка переменных окружения
+	loadEnv(logger)
+
+	// Чтение переменных окружения
+	botToken := os.Getenv("BOT_TOKEN")
+	chatIDStr := os.Getenv("CHAT_ID")
+	if botToken == "" || chatIDStr == "" {
+		logger.Error("Необходимые переменные окружения отсутствуют", "BOT_TOKEN", botToken, "CHAT_ID", chatIDStr)
+		os.Exit(1)
+	}
+
+	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
+	if err != nil {
+		logger.Error("Ошибка преобразования CHAT_ID в int64", "error", err)
+		os.Exit(1)
+	}
+
+	// Инициализация адаптеров
 	quoteAPI := adapters.NewZenQuotesAPI()
 	translator := adapters.NewMyMemoryTranslator()
 	telegramAdapter, err := adapters.NewTelegramAdapter(botToken, chatID)
@@ -42,22 +55,27 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Инициализация сервисов
 	fetchQuoteService := usecases.NewFetchQuoteService(quoteAPI)
 	translateService := usecases.NewTranslateService(translator)
 	sendQuoteService := usecases.NewSendQuoteService(telegramAdapter)
 
+	// Планировщик Cron
 	c := cron.New()
 	defer c.Stop()
 
+	// Задача отправки цитат
 	c.AddFunc("*/30 * * * *", func() {
 		ctx := context.Background()
 
+		// Получение цитаты
 		quote, err := fetchQuoteService.FetchQuote(ctx)
 		if err != nil {
 			logger.Error("Ошибка получения цитаты", "error", err)
 			return
 		}
 
+		// Перевод цитаты
 		translatedText, err := translateService.Translate(ctx, quote.Text)
 		if err != nil {
 			logger.Error("Ошибка перевода цитаты", "error", err)
@@ -65,6 +83,7 @@ func main() {
 			quote.Text = translatedText
 		}
 
+		// Отправка цитаты
 		if err := sendQuoteService.SendQuote(ctx, quote); err != nil {
 			logger.Error("Ошибка отправки цитаты", "error", err)
 		} else {
@@ -72,8 +91,10 @@ func main() {
 		}
 	})
 
+	// Запуск планировщика
 	c.Start()
 	logger.Info("Планировщик запущен. Ожидание задач.")
 
+	// Бесконечный цикл для работы программы
 	select {}
 }
