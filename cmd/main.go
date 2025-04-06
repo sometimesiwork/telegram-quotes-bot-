@@ -10,6 +10,7 @@ import (
 	"telegram-quotes-bot/internal/usecases"
 )
 
+// setupLogger логгер
 func setupLogger() *slog.Logger {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,

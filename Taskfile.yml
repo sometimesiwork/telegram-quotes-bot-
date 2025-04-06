@@ -1,0 +1,21 @@
+version: '3'
+tasks:
+  default:
+    desc: Задача по умолчанию
+    cmds:
+      - echo "Привет, это Taskfile!"
+
+  build:
+    desc: Собираем приложение
+    cmds:
+      - go build -o bin/app cmd/main.go
+
+  test:
+    desc: Запускаем тесты
+    cmds:
+      - go test ./...
+
+  lint:
+    desc: Проверяем код на ошибки стиля
+    cmds:
+      - golint ./...
