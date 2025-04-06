@@ -12,7 +12,7 @@ type QuoteAPI interface {
 
 // Translator определяет методы для перевода текста.
 type Translator interface {
-	Translate(ctx context.Context, text, targetLang string) (string, error)
+	Translate(ctx context.Context, text, author, targetLang string) (string, string, error)
 }
 
 // TelegramSender определяет методы для отправки сообщений в Telegram.

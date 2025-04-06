@@ -11,18 +11,14 @@ type TranslateService struct {
 	translator interfaces.Translator
 }
 
-// NewTranslateService создаёт новый экземпляр TranslateService.
-// Принимает интерфейс Translator для выполнения перевода текста.
 func NewTranslateService(translator interfaces.Translator) *TranslateService {
 	return &TranslateService{translator: translator}
 }
 
-// Translate выполняет перевод текста на русский язык.
-// Возвращает переведённый текст или ошибку, если перевод не удался.
-func (s *TranslateService) Translate(ctx context.Context, text string) (string, error) {
-	translatedText, err := s.translator.Translate(ctx, text, "ru")
+func (s *TranslateService) Translate(ctx context.Context, text, author string) (string, string, error) {
+	translatedText, translatedAuthor, err := s.translator.Translate(ctx, text, author, "ru")
 	if err != nil {
-		return "", errors.New("не удалось перевести текст")
+		return "", "", errors.New("не удалось перевести текст или автора")
 	}
-	return translatedText, nil
+	return translatedText, translatedAuthor, nil
 }

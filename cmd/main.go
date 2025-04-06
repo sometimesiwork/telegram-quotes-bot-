@@ -58,18 +58,19 @@ func main() {
 		}
 
 		// Перевод цитаты
-		translatedText, err := translateService.Translate(ctx, quote.Text)
+		translatedText, translatedAuthor, err := translateService.Translate(ctx, quote.Text, quote.Author)
 		if err != nil {
-			logger.Error("Ошибка перевода цитаты", "error", err)
+			logger.Error("Ошибка перевода цитаты или автора", "error", err)
 		} else {
 			quote.Text = translatedText
+			quote.Author = translatedAuthor
 		}
 
 		// Отправка цитаты
 		if err := sendQuoteService.SendQuote(ctx, quote); err != nil {
 			logger.Error("Ошибка отправки цитаты", "error", err)
 		} else {
-			logger.Info("Цитата успешно отправлена", "quote", quote.Text)
+			logger.Info("Цитата успешно отправлена", "quote", quote.Text, "author", quote.Author)
 		}
 	})
 
