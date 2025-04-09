@@ -1,15 +1,13 @@
 # Telegram Quotes Bot
 
-##### Telegram-бот, который автоматически отправляет мотивационные цитаты в канал по расписанию. Бот получает случайные цитаты из внешнего API (ZenQuotes), переводит их на русский язык с помощью MyMemory API и отправляет в Telegram-канал через Telegram Bot API.
+##### Telegram bot that automatically sends motivational quotes to the channel on a scheduled basis. The bot receives random quotes from an external API (ZenQuotes), translates them into Russian using MyMemory API and sends them to Telegram channel via Telegram Bot API.
 
-- Получение случайных мотивационных цитат.
-- Перевод цитат на русский язык.
-- Отправка цитат в Telegram-канал по расписанию (Cron).
-- Развёртывание на облачной платформе Railway.
+- Receiving random motivational quotes.
+- Translating quotes into Russian.
+- Send quotes to Telegram channel on schedule (Cron).
 
-### Технологии
-- Язык программирования: Go 
-- API:
-  (Telegram Bot API; ZenQuotes API; MyMemory API)
-- Планировщик задач: Cron
-- Облачная платформа: Railway
+### Technologies
+- Programming language: Go
+- API: (Telegram Bot API; ZenQuotes API; MyMemory API).
+- Task Scheduler: Cron
+- Cloud platform: Railway

@@ -24,7 +24,7 @@ func NewSendQuoteService(telegram interfaces.TelegramSender) *SendQuoteService {
 // Возвращает ошибку, если отправка не удалась.
 func (s *SendQuoteService) SendQuote(ctx context.Context, quote *entities.Quote) error {
 	// Форматируем цитату с эмодзи для текста и автора
-	message := fmt.Sprintf("📖 %s\n\n— %s ✍️", quote.Text, quote.Author)
+	message := fmt.Sprintf("📖 *%s*\n\n— _%s_ ✍️", quote.Text, quote.Author)
 
 	// Отправляем сформированное сообщение через TelegramSender
 	err := s.telegram.SendMessage(ctx, message)
