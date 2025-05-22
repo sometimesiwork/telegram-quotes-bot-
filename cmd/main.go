@@ -48,7 +48,7 @@ func main() {
 	defer c.Stop()
 
 	// Задача отправки цитат
-	c.AddFunc("0 4,8,14,18 * * *", func() {
+	_, err = c.AddFunc("0 4,8,14,18 * * *", func() {
 		ctx := context.Background()
 
 		// Получение цитаты
@@ -74,6 +74,10 @@ func main() {
 			logger.Info("Цитата успешно отправлена", "quote", quote.Text, "author", quote.Author)
 		}
 	})
+	if err != nil {
+		logger.Error("Не удалось добавить cron-задачу", "error", err)
+		os.Exit(1)
+	}
 
 	// Запуск планировщика
 	c.Start()
