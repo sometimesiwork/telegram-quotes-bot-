@@ -10,4 +10,4 @@
 - Programming language: Go
 - API: (Telegram Bot API; ZenQuotes API; MyMemory API).
 - Task Scheduler: Cron
-- Cloud platform: Railway
+- Cloud platform: GitHub Action
