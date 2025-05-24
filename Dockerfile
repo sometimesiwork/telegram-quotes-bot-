@@ -1,9 +1,17 @@
+# Используем минимальный образ с Go
 FROM golang:1.23-alpine
 
+# Рабочая директория
 WORKDIR /app
 
+# Копируем код
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o bot cmd/main.go
+# Собираем бинарник
+RUN CGO_ENABLED=0 go build -o /bot cmd/main.go
 
-CMD ["./bot"]
+# Убираем лишнее
+RUN apk add --no-cache git ca-certificates tzdata && update-ca-certificates
+
+# Запуск бота
+CMD ["/bot"]
