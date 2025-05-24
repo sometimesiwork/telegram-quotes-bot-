@@ -30,4 +30,4 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/telegram-quotes-bot:latest
+            ghcr.io/che1nov/telegram-quotes-bot:latest
