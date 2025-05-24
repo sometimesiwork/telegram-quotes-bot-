@@ -8,7 +8,7 @@ tasks:
   build:
     desc: Собираем приложение
     cmds:
-      - go build -o bin/app cmd/main.go
+      - go build -o ./app cmd/main.go
 
   test:
     desc: Запускаем тесты

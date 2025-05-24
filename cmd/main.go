@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 	"log/slog"
 	"os"
@@ -19,6 +20,9 @@ func setupLogger() *slog.Logger {
 }
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		slog.Warn("Файл .env не найден или не загружен")
+	}
 	// Настройка логгера
 	logger := setupLogger()
 
