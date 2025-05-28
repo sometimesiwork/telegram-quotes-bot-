@@ -52,7 +52,7 @@ func main() {
 	defer c.Stop()
 
 	// Задача отправки цитат
-	_, err = c.AddFunc("*/30 * * * *", func() {
+	_, err = c.AddFunc("0 */3 * * *", func() {
 		ctx := context.Background()
 
 		// Получение цитаты
